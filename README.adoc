@@ -1,0 +1,100 @@
+= Neon Frame
+
+A _highly opinionated_ framework to build Neon-based Rust libs for Node.
+_Neon Frame_ makes a standard interface for a Rust lib to respond back to Javascript.
+
+As a response it uses a JSON like:
+[source, json]
+----
+{
+  "succeeded": true,
+  "result": {
+    "foo": "bar"
+  }
+}
+----
+
+Where `{"foo": "bar"}` is actual result.
+
+If the method failed is returns something like:
+
+[source, json]
+----
+{
+  "succeeded": false,
+  "error": {
+    "code": 100,
+    "message": "Invalid input value for #0"
+  }
+}
+----
+
+As a Typescript type it's:
+
+[source, typescript]
+----
+type Status<T> = {
+    succeeded: boolean,
+    result: T | undefined,
+    error: {
+        code: number,
+        message: string
+    } | undefined
+}
+----
+
+Neon Frame simplifies the logic behind handlers by unifying how the result and errors are processed and converted.
+Now you can just write a usual method that returns a `Result<T, E>` and it automatically converted and returned to Node just by annotating your method with `#[neon_frame_fn]`.
+
+Example:
+[source, rust]
+----
+#[neon_frame_fn]
+pub fn hello_world(cx: &mut FunctionContext) -> Result<String, MyError> {
+    Ok("Hello World".to_string())
+}
+----
+
+NOTE: The method is expected to have `cx: &mut FunctionContext` instead of `mut cx: FunctionContext`.
+
+Also in this case you need to write a converter from `MyError` to `(usize, String)`.
+I.e. implement the trait `impl From<MyError> for (usize, String)`:
+
+[source, rust]
+----
+impl From<MyError> for (usize, String) {
+    fn from(err: MyError) -> Self {
+        todo!()
+    }
+}
+----
+
+In addition to the standard synchronous call the library provides same simplification for Channel handlers.
+At that case you use `#[neon_frame_fn(channel)]` macro, and use additional parameter to your function for the `FnOnce` that handles the response:
+
+[source, rust]
+----
+#[neon_frame_fn]
+pub fn hello_world<H>(cx: &mut FunctionContext, handler: H) -> Result<(), MyError>
+where
+    H: FnOnce(Result<String, MyError>) + Send + 'static {
+
+    std::thread::spawn(move || {
+        handler(Ok("Hello World".to_string()));
+    });
+    Ok(())
+
+}
+----
+
+== License
+
+Copyright 2022 EmeraldPay, Inc
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and limitations under the License.

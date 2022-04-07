@@ -1,0 +1,11 @@
+[package]
+name = "neon-frame"
+version = "0.1.0-dev"
+edition = "2021"
+authors = ["Emerald Team", "Igor Artamonov"]
+license = "Apache-2.0"
+
+[dependencies]
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
