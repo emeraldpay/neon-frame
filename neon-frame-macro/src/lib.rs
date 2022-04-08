@@ -4,7 +4,7 @@ extern crate syn;
 extern crate quote;
 
 use syn::{parse_macro_input, ReturnType};
-use syn::{ItemFn, Ident};
+use syn::{ItemFn, Ident, Expr, ExprAssign};
 use syn::parse::{ParseStream, Parse};
 use syn::punctuated::{Punctuated};
 use proc_macro::{TokenStream };
@@ -12,24 +12,39 @@ use proc_macro2::{ Span };
 
 struct Args {
     use_channel: bool,
+    channel_pos: i32,
 }
 
 impl Default for Args {
     fn default() -> Self {
         Args {
-            use_channel: false
+            use_channel: false,
+            channel_pos: 0,
         }
     }
 }
 
 impl Parse for Args {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let vars = Punctuated::<Ident, Token![,]>::parse_terminated(input)?;
-        let use_channel = vars.iter().any(|v| v.to_string().eq(&"channel".to_string()));
-        Ok(Args {
-            use_channel,
-            ..Args::default()
-        })
+        let mut lookahead = input.lookahead1();
+        let mut result = Args::default();
+        if lookahead.peek(Ident) {
+            let ident = input.parse::<Ident>()?;
+            if ident.to_string().eq(&"channel".to_string()) {
+                result.use_channel = true;
+                lookahead = input.lookahead1();
+                if lookahead.peek(Token![=]) {
+                    let _ = input.parse::<Token![=]>()?;
+                    lookahead = input.lookahead1();
+                    if lookahead.peek(syn::LitInt) {
+                        let pos = input.parse::<syn::LitInt>()?;
+                        let pos = pos.base10_parse::<i32>()?;
+                        result.channel_pos = pos;
+                    }
+                }
+            }
+        }
+        Ok(result)
     }
 }
 
@@ -43,9 +58,11 @@ pub fn neon_frame_fn(attr: TokenStream, item: TokenStream) -> TokenStream {
     let new_name = Ident::new(&format!("{}_nfi", orignal_name), Span::call_site());
     input_fn.sig.ident = new_name.clone();
 
+    let channel_pos = args.channel_pos;
+
     let process_handle = if args.use_channel {
         quote! {
-            let arg = &cx.argument::<neon::types::JsFunction>(0)?;
+            let arg = &cx.argument::<neon::types::JsFunction>(#channel_pos)?;
             let handler = neon::prelude::JsFunction::root(arg, &mut cx);
             let queue = neon::prelude::Context::channel(&mut cx);
 
@@ -88,4 +105,37 @@ pub fn neon_frame_fn(attr: TokenStream, item: TokenStream) -> TokenStream {
             Ok(neon::prelude::Context::string(&mut cx, result.as_json()))
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use syn::parse_str;
+    use syn::parse::{ParseStream, Parse};
+    use proc_macro::{TokenStream };
+    use crate::Args;
+
+    #[test]
+    fn parse_no_args() {
+        let args = syn::parse_str::<Args>("");
+        assert!(args.is_ok());
+        let args = args.unwrap();
+        assert_eq!(args.use_channel, false);
+    }
+
+    #[test]
+    fn parse_basic_channel() {
+        let args = syn::parse_str::<Args>("channel");
+        assert!(args.is_ok());
+        let args = args.unwrap();
+        assert_eq!(args.use_channel, true);
+    }
+
+    #[test]
+    fn parse_channel_at_pos() {
+        let args = syn::parse_str::<Args>("channel=2");
+        assert!(args.is_ok());
+        let args = args.unwrap();
+        assert_eq!(args.use_channel, true);
+        assert_eq!(args.channel_pos, 2);
+    }
 }

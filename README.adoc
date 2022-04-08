@@ -74,16 +74,39 @@ At that case you use `#[neon_frame_fn(channel)]` macro, and use additional param
 
 [source, rust]
 ----
-#[neon_frame_fn]
+// function called from JS as:
+//
+// hello_world((x) => { ... });
+//
+#[neon_frame_fn(channel)]
 pub fn hello_world<H>(cx: &mut FunctionContext, handler: H) -> Result<(), MyError>
-where
-    H: FnOnce(Result<String, MyError>) + Send + 'static {
+    where
+        H: FnOnce(Result<String, MyError>) + Send + 'static {
 
     std::thread::spawn(move || {
         handler(Ok("Hello World".to_string()));
     });
     Ok(())
+}
+----
 
+By default, it uses the first JS argument as a handler function.
+Buf if you need to use it at a different position you can specify it as parameter like `#[neon_frame_fn(channel=2)]`
+
+[source, rust]
+----
+// function called from JS as:
+//
+// hello_world("hi", "there", (x) => { ... });
+//
+// i.e. with handler at the 3rd position, which is 2 starting from zero
+//
+#[neon_frame_fn(channel=2)]
+pub fn hello_world<H>(cx: &mut FunctionContext, handler: H) -> Result<(), MyError>
+    where
+        H: FnOnce(Result<String, MyError>) + Send + 'static {
+
+    todo!()
 }
 ----
 
