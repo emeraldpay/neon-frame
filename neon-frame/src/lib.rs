@@ -52,7 +52,7 @@ impl<T> StatusResult<T>
             },
         };
         let result = serde_json::to_string(&obj)
-            .map_err(|err| "{\"succeeded\": false, \"error\": {\"code\": 0, \"message\": \"Failed to convert resulting JSON\"}}".to_string());
+            .map_err(|_| "{\"succeeded\": false, \"error\": {\"code\": 0, \"message\": \"Failed to convert resulting JSON\"}}".to_string());
         match result {
             Ok(v) => v,
             Err(v) => v

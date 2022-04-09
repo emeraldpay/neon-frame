@@ -3,12 +3,11 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-use syn::{parse_macro_input, ReturnType};
-use syn::{ItemFn, Ident, Expr, ExprAssign};
+use syn::{parse_macro_input};
+use syn::{ItemFn, Ident};
 use syn::parse::{ParseStream, Parse};
-use syn::punctuated::{Punctuated};
 use proc_macro::{TokenStream };
-use proc_macro2::{ Span };
+use proc_macro2::{Span};
 
 struct Args {
     use_channel: bool,
