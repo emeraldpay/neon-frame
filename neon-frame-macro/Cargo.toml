@@ -1,9 +1,12 @@
 [package]
 name = "neon-frame-macro"
-version = "0.1.0-dev"
+version = "0.1.0"
 edition = "2021"
 authors = ["Emerald Team", "Igor Artamonov"]
 license = "Apache-2.0"
+repository = "https://github.com/emeraldpay/neon-frame/neon-frame-macro"
+documentation = "https://docs.rs/neon-frame-macro"
+description = "Macros to simplify writing Neon apps"
 
 [lib]
 proc-macro = true

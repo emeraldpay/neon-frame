@@ -1,9 +1,12 @@
 [package]
 name = "neon-frame"
-version = "0.1.0-dev"
+version = "0.1.0"
 edition = "2021"
 authors = ["Emerald Team", "Igor Artamonov"]
 license = "Apache-2.0"
+repository = "https://github.com/emeraldpay/neon-frame/neon-frame"
+documentation = "https://docs.rs/neon-frame"
+description = "Macros to simplify writing Neon apps"
 
 [dependencies]
 serde = "1.0"

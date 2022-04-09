@@ -1,7 +1,35 @@
 = Neon Frame
 
+image:https://img.shields.io/crates/v/neon-frame.svg?style=flat-square["Crates",link="https://crates.io/crates/neon-frame"]
+image:https://img.shields.io/crates/v/neon-frame-macro.svg?style=flat-square["Crates",link="https://crates.io/crates/neon-frame-macro"]
+image:https://img.shields.io/badge/License-Apache%202.0-blue.svg["License"]
+
 A _highly opinionated_ framework to build Neon-based Rust libs for Node.
 _Neon Frame_ makes a standard interface for a Rust lib to respond back to Javascript.
+
+Neon Frame simplifies the logic behind handlers by unifying how the result and errors are processed and converted.
+Now you can just write a usual method that returns a `Result<T, E>` and it automatically converted and returned to Node.
+
+
+== Install
+
+.Cargo.toml
+[source, toml]
+----
+[dependencies]
+neon-frame = "0.1"
+neon-frame-macro = "0.1"
+----
+
+.lib.rs
+[source, rust]
+----
+#[macro_use]
+extern crate neon_frame_macro;
+----
+
+
+== How it works
 
 As a response it uses a JSON like:
 [source, json]
@@ -43,10 +71,8 @@ type Status<T> = {
 }
 ----
 
-Neon Frame simplifies the logic behind handlers by unifying how the result and errors are processed and converted.
-Now you can just write a usual method that returns a `Result<T, E>` and it automatically converted and returned to Node just by annotating your method with `#[neon_frame_fn]`.
+To use Neon Frame simply annotate your method with `#[neon_frame_fn]`:
 
-Example:
 [source, rust]
 ----
 #[neon_frame_fn]
@@ -57,7 +83,7 @@ pub fn hello_world(cx: &mut FunctionContext) -> Result<String, MyError> {
 
 NOTE: The method is expected to have `cx: &mut FunctionContext` instead of `mut cx: FunctionContext`.
 
-Also in this case you need to write a converter from `MyError` to `(usize, String)`.
+Also, you need to write a converter from `MyError` to `(usize, String)`.
 I.e. implement the trait `impl From<MyError> for (usize, String)`:
 
 [source, rust]
