@@ -61,8 +61,8 @@ pub fn neon_frame_fn(attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let process_handle = if args.use_channel {
         quote! {
-            let arg = &cx.argument::<neon::types::JsFunction>(#channel_pos)?;
-            let handler = neon::prelude::JsFunction::root(arg, &mut cx);
+            let arg = &cx.argument::<neon::prelude::JsFunction>(#channel_pos)?;
+            let handler = <neon::prelude::JsFunction as neon::prelude::Object>::root(arg, &mut cx);
             let queue = neon::prelude::Context::channel(&mut cx);
 
             let internal_handler = move |result| {
