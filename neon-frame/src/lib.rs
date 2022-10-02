@@ -15,6 +15,7 @@ pub struct StatusJson<T> {
     pub error: Option<StatusErrorJson>,
 }
 
+#[derive(Debug, Clone)]
 pub enum StatusResult<T> {
     Ok(T),
     Error(usize, String),

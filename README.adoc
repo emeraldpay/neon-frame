@@ -6,10 +6,12 @@ image:https://img.shields.io/badge/License-Apache%202.0-blue.svg["License"]
 
 A _highly opinionated_ framework to build Neon-based Rust libs for Node.
 _Neon Frame_ makes a standard interface for a Rust lib to respond back to Javascript.
+It takes care about handling errors and converting the response back to JS.
 
 Neon Frame simplifies the logic behind handlers by unifying how the result and errors are processed and converted.
 Now you can just write a usual method that returns a `Result<T, E>` and it automatically converted and returned to Node.
 
+You can _optionally_ use the Channels, and in this case on the Javascript side of the Neon Frame wraps those calls to get just a plain `Promise<T>`.
 
 == Install
 
@@ -21,15 +23,95 @@ neon-frame = "0.1"
 neon-frame-macro = "0.1"
 ----
 
-.lib.rs
+.package.json
+[source, json]
+----
+"dependencies": {
+    "@emeraldpay/neon-frame": "^0.1.1"
+}
+----
+
+.JS import
+[source, typescript]
+----
+import {neonFrameCall} from "@emeraldpay/neon-frame";
+----
+
+== Short intro to its usage
+
+=== Rust side
+
+.Now you can mark a function with `#[neon_frame_fn]` macro:
 [source, rust]
 ----
 #[macro_use]
 extern crate neon_frame_macro;
+
+#[neon_frame_fn]
+pub fn function_hello_world(_cx: &mut FunctionContext) -> Result<String, Errors> {
+    Ok("Hello World".to_string())
+}
 ----
 
+The macro does automatic conversion from Rust to Node types.
+Instead of `String` it can be any `Serializable` structure.
+Internally it just wraps it into a JSON that can be easily handled on the Node side.
 
-== How it works
+=== Javascript side
+
+[source, typescript]
+----
+import {neonFrameDirectCall} from "@emeraldpay/neon-frame";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const addon = require('path/to/index.node');
+
+export function helloWorld(): string {
+    return neonFrameDirectCall<string>(addon, "function_hello_world", []);
+}
+----
+
+What if you want to process something in a separate thread?
+I.e., get it asynchronously as a Promise in Javascript?
+
+=== Rust side using Channels
+
+.Use `#[neon_frame_fn(channel)]` macro which provides you with a callback function:
+[source, rust]
+----
+#[neon_frame_fn(channel)]
+pub fn function_default_channel<H>(_cx: &mut FunctionContext, handler: H) -> Result<(), Errors>
+    where
+        H: FnOnce(Result<String, Errors>) + Send + 'static {
+
+    std::thread::spawn(move || {
+        let result = "Hello World".to_string();
+        handler(Ok(result));
+    });
+
+    Ok(())
+}
+----
+
+=== Javascript side using Promise
+
+[source, typescript]
+----
+import {neonFrameHandlerCall} from "@emeraldpay/neon-frame";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const addon = require('path/to/index.node');
+
+export function default_channel(): Promise<string> {
+    return neonFrameHandlerCall<string>(addon, "function_default_channel", []);
+}
+----
+
+== Examples
+
+In the `/integration-tests` directory you can find Interation Tests that can also server as implementation examples.
+
+== How it works with details
 
 As a response it uses a JSON like:
 [source, json]
@@ -42,7 +124,7 @@ As a response it uses a JSON like:
 }
 ----
 
-Where `{"foo": "bar"}` is actual result.
+Where `{"foo": "bar"}` is an actual result.
 
 If the method failed is returns something like:
 

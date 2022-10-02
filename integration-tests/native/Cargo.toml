@@ -1,0 +1,22 @@
+[package]
+name = "neon-frame-integration-test"
+version = "0.1.1"
+license = "Apache-2.0"
+edition = "2021"
+exclude = ["index.node"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+neon-frame = { path = "../../neon-frame" }
+neon-frame-macro = { path = "../../neon-frame-macro" }
+lazy_static = "1.4.0"
+serde = "1.0"
+serde_json = "1.0"
+serde_derive = "1.0"
+
+[dependencies.neon]
+version = "0.10.0"
+default-features = false
+features = ["napi-6", "channel-api"]

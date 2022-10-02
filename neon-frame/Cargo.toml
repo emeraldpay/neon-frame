@@ -1,6 +1,6 @@
 [package]
 name = "neon-frame"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 authors = ["Emerald Team", "Igor Artamonov"]
 license = "Apache-2.0"

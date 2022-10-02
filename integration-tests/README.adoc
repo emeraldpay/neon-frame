@@ -1,0 +1,29 @@
+= Integration Tests
+
+Directory contains a very simple code as an example and to test the Neon Frame together with Javascript.
+
+- `native/` dir is a basic Rust module written with Neon Frame
+- `src/access.ts` Neon Frame JS access to that moduel
+- `src/tests.ts` ensures that it works
+
+== Running the tests
+
+.Prepare the environment
+----
+yarn install
+----
+
+.Link with current JS sources
+----
+yarn run link-neon-js
+----
+
+.Build
+----
+yarn build
+----
+
+.Run tests
+----
+yarn test
+----
