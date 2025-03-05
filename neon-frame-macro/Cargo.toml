@@ -1,6 +1,6 @@
 [package]
 name = "neon-frame-macro"
-version = "0.1.1"
+version = "0.2.0"
 edition = "2021"
 authors = ["Emerald Team", "Igor Artamonov"]
 license = "Apache-2.0"
