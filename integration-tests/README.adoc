@@ -10,20 +10,15 @@ Directory contains a very simple code as an example and to test the Neon Frame t
 
 .Prepare the environment
 ----
-yarn install
-----
-
-.Link with current JS sources
-----
-yarn run link-neon-js
+pnpm install
 ----
 
 .Build
 ----
-yarn build
+pnpm build
 ----
 
 .Run tests
 ----
-yarn test
+pnpm test
 ----

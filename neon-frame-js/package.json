@@ -10,8 +10,8 @@
     "url": "git+https://github.com/emeraldpay/neon-frame.git"
   },
   "scripts": {
-    "build:ts": "yarn clean && tsc -b",
-    "build": "yarn run build:ts",
+    "build:ts": "pnpm run clean && tsc -b",
+    "build": "pnpm run build:ts",
     "clean": "rimraf lib/ tsconfig.tsbuildinfo",
     "test": "jest --passWithNoTests"
   },
