@@ -11,7 +11,7 @@ use proc_macro2::{Span};
 
 struct Args {
     use_channel: bool,
-    channel_pos: i32,
+    channel_pos: usize,
 }
 
 impl Default for Args {
@@ -37,7 +37,7 @@ impl Parse for Args {
                     lookahead = input.lookahead1();
                     if lookahead.peek(syn::LitInt) {
                         let pos = input.parse::<syn::LitInt>()?;
-                        let pos = pos.base10_parse::<i32>()?;
+                        let pos = pos.base10_parse::<usize>()?;
                         result.channel_pos = pos;
                     }
                 }
